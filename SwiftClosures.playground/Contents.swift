@@ -200,3 +200,96 @@ print(incrementedByTen())
 //Escaping Closures:
 //A closure is said to escape a function when the closure is passed as an argument to the function, but is called after the function returns. When you declare a function that takes a closure as one of its parameters, you can write @escaping before the parameter’s type to indicate that the closure is allowed to escape.
 //One way that a closure can escape is by being stored in a variable that’s defined outside the function
+
+var onDownloadDone : ((String)-> ())?
+
+
+func downloadStart(completionHandler: @escaping (String) -> () ) {
+    print("Downloading Start")
+    
+    onDownloadDone = completionHandler
+    
+//    DispatchQueue.main.asyncAfter(wallDeadline: .now() + 3 ){
+//        downloadFinished()
+//    }
+}
+
+func downloadFinished(){
+    onDownloadDone?("Received data")
+}
+
+downloadStart{(data) in
+    print(data)
+    
+}
+
+
+//Autoclosures ???
+//An autoclosure is a closure that’s automatically created to wrap an expression that’s being passed as an argument to a function. It doesn’t take any arguments, and when it’s called, it returns the value of the expression that’s wrapped inside of it. This syntactic convenience lets you omit braces around a function’s parameter by writing a normal expression instead of an explicit closure.
+
+//simple closure
+print("\n")
+func myFunction(myClosure:()->(), myStr1: String){
+    print(myStr1)
+    myClosure()
+}
+
+myFunction(myClosure:{
+    print("Hey mf this is a closure!")
+}, myStr1: "OK move now..")
+
+
+//autoclosure
+print("\n")
+func myFunction(myClosure:@autoclosure()->(), myStr1: String){
+    print(myStr1)
+    myClosure()
+}
+
+myFunction(myClosure: (print("This is an autoclosure")), myStr1: "What's up?")
+
+//autoclosure don't have a parameter, but it can have a return type.
+//e.g myclosure: () -> String etc.
+
+//An autoclosure lets you delay evaluation, because the code inside isn’t run until you call the closure. Delaying evaluation is useful for code that has side effects or is computationally expensive, because it lets you control when that code is evaluated. The code below shows how a closure delays evaluation.
+
+
+var arr = ["raj", "vicky", "Bhose"]
+
+func myFunc2(customer: ()-> String){
+    print("Come \(customer())")
+}
+
+myFunc2(customer: { arr.remove(at: 0) } )
+//The serve(customer:) function in the listing above takes an explicit closure that returns a customer’s name. The version of serve(customer:) below performs the same operation but, instead of taking an explicit closure, it takes an autoclosure by marking its parameter’s type with the @autoclosure attribute. Now you can call the function as if it took a String argument instead of a closure. The argument is automatically converted to a closure, because the customer parameter’s type is marked with the @autoclosure attribute.
+
+
+func myFunc2(customer: @autoclosure()-> String){
+    print("Come \(customer())")
+}
+
+myFunc2(customer: arr.remove(at: 0))
+
+//Overusing autoclosures can make your code hard to understand. The context and function name should make it clear that evaluation is being deferred.
+
+
+//If you want an autoclosure that’s allowed to escape, use both the @autoclosure and @escaping attributes. The @escaping attribute is described above in Escaping Closures.
+
+
+arr = ["raj", "vicky", "Bhose"]
+
+var arr2 : [() -> String] = []
+
+func myFunc3(_ customer: @autoclosure @escaping () -> String){
+    
+    arr2.append(customer)
+}
+
+myFunc3(arr.remove(at: 0))
+myFunc3(arr.remove(at: 0))
+myFunc3(arr.remove(at: 0))
+
+print("\n")
+for i in arr2{
+    print("now serving \(i())")
+}
